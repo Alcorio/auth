@@ -15,22 +15,26 @@ import (
 
 //go:embed migrations/*
 var embeddedMigrations embed.FS
+
 // 上面注释是把 migrations/ 下的 SQL 脚本嵌入到 Go 程序中。
-func init() {// 初始化日志
+func init() { // 初始化日志，并设置为json格式
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 }
 
 func main() {
+	// 把嵌入的migrations提供给cmd，让命令行工具可以运行数据库迁移
 	cmd.EmbeddedMigrations = embeddedMigrations
 
 	execCtx, execCancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
 	defer execCancel()
 
 	go func() {
-		<-execCtx.Done()
+		// 当收到退出信号时，就打印日志
+		<-execCtx.Done() // 实现是一个只读通道
 		logrus.Info("received graceful shutdown signal")
 	}()
-
+　　
+	// 服务启动点
 	// command is expected to obey the cancellation signal on execCtx and
 	// block while it is running
 	if err := cmd.RootCommand().ExecuteContext(execCtx); err != nil {
