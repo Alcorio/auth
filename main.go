@@ -15,8 +15,8 @@ import (
 
 //go:embed migrations/*
 var embeddedMigrations embed.FS
-
-func init() {
+// 上面注释是把 migrations/ 下的 SQL 脚本嵌入到 Go 程序中。
+func init() {// 初始化日志
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 }
 
